@@ -1,19 +1,19 @@
 %%
 %% %CopyrightBegin%
-%% 
+%%
 %% Copyright Ericsson AB 2002-2009. All Rights Reserved.
-%% 
+%%
 %% The contents of this file are subject to the Erlang Public License,
 %% Version 1.1, (the "License"); you may not use this file except in
 %% compliance with the License. You should have received a copy of the
 %% Erlang Public License along with this software. If not, it can be
 %% retrieved online at http://www.erlang.org/.
-%% 
+%%
 %% Software distributed under the License is distributed on an "AS IS"
 %% basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
 %% the License for the specific language governing rights and limitations
 %% under the License.
-%% 
+%%
 %% %CopyrightEnd%
 %%
 -module(ttb).
@@ -21,7 +21,7 @@
 
 %% API
 -export([tracer/0,tracer/1,tracer/2,p/2,stop/0,stop/1]).
--export([tp/2, tp/3, tp/4, ctp/0, ctp/1, ctp/2, ctp/3, tpl/2, tpl/3, tpl/4, 
+-export([tp/2, tp/3, tp/4, ctp/0, ctp/1, ctp/2, ctp/3, tpl/2, tpl/3, tpl/4,
 	 ctpl/0, ctpl/1, ctpl/2, ctpl/3, ctpg/0, ctpg/1, ctpg/2, ctpg/3]).
 -export([seq_trigger_ms/0,seq_trigger_ms/1]).
 -export([write_trace_info/2]).
@@ -59,9 +59,9 @@ do_tracer(Nodes0,PI,Client,Traci) ->
     do_tracer(Clients,PI,Traci).
 
 do_tracer(Clients,PI,Traci) ->
-    {ClientSucc,Succ} = 
+    {ClientSucc,Succ} =
 	lists:foldl(
-	  fun({N,{local,File},TF},{CS,S}) -> 
+	  fun({N,{local,File},TF},{CS,S}) ->
 		  [_Sname,Host] = string:tokens(atom_to_list(N),"@"),
 		  case catch dbg:tracer(N,port,dbg:trace_port(ip,0)) of
 		      {ok,N} ->
@@ -77,21 +77,21 @@ do_tracer(Clients,PI,Traci) ->
 					     Other}),
 			  {CS, S}
 		     end;
-	     ({N,C,_}=Client,{CS,S}) -> 
+	     ({N,C,_}=Client,{CS,S}) ->
 		  case catch dbg:tracer(N,port,dbg:trace_port(file,C)) of
-		      {ok,N} -> 
+		      {ok,N} ->
 			  {ok,T} = dbg:get_tracer(N),
 			  rpc:call(N,seq_trace,set_system_tracer,[T]),
 			  {[Client|CS], [N|S]};
-		      Other -> 
+		      Other ->
 			  display_warning(N,Other),
 			  {CS,S}
 		  end
-	  end, 
-	  {[],[]}, 
+	  end,
+	  {[],[]},
 	  Clients),
     case Succ of
-	[] -> 
+	[] ->
 	    {ok,Succ};
 	_list ->
 	    write_info(ClientSucc,PI,Traci),
@@ -150,37 +150,37 @@ remove_faulty_runtime_tools_vsn(Nodes) ->
       end,Nodes).
 
 check_vsn(_Node,_Vsn) -> true.
-%check_vsn(Node,_Vsn) -> 
+%check_vsn(Node,_Vsn) ->
 %    display_warning(Node,faulty_vsn_of_runtime_tools),
 %    false.
 
 clients(Nodes, {wrap,Name}) ->
-    F = fun(Node) -> 
+    F = fun(Node) ->
 		TraceFile = name(Node,Name),
-		{Node,{TraceFile++".",wrap,".wrp"},TraceFile} 
+		{Node,{TraceFile++".",wrap,".wrp"},TraceFile}
 	end,
     lists:map(F,Nodes);
 clients(Nodes, {wrap,Name,Size,Count}) ->
-    F = fun(Node) -> 
+    F = fun(Node) ->
 		TraceFile = name(Node,Name),
-		{Node,{TraceFile++".",wrap,".wrp",Size,Count},TraceFile} 
+		{Node,{TraceFile++".",wrap,".wrp",Size,Count},TraceFile}
 	end,
     lists:map(F,Nodes);
 clients(Nodes, {local,RealClient}) ->
     WrapClients = clients(Nodes,RealClient),
-    F = fun({Node,Client,TraceFile}) -> 
+    F = fun({Node,Client,TraceFile}) ->
 		{Node,{local,Client},TraceFile}
 	end,
     lists:map(F,WrapClients);
 clients(Nodes, Name) ->
-    F = fun(Node) -> 
+    F = fun(Node) ->
 		TraceFile = name(Node,Name),
 		{Node,TraceFile,TraceFile}
 	end,
     lists:map(F,Nodes).
-    
+
 name(Node,Filename) ->
-    Dir = filename:dirname(Filename), 
+    Dir = filename:dirname(Filename),
     File = filename:basename(Filename),
     filename:join(Dir,atom_to_list(Node) ++ "-" ++ File).
 
@@ -193,7 +193,7 @@ store(Func,Args) ->
 	   end,
     ets:insert(?history_table,{Last+1,{?MODULE,Func,Args}}).
 
-list_history() -> 
+list_history() ->
     %% the check is only to see if the tool is started.
     case ets:info(?history_table) of
 	undefined -> {error, not_running};
@@ -209,21 +209,21 @@ run_history([]) ->
     ok;
 run_history(N) ->
     case catch ets:lookup(?history_table,N) of
-	[{N,{M,F,A}}] -> 
+	[{N,{M,F,A}}] ->
 	    print_func(M,F,A),
 	    R = apply(M,F,A),
 	    print_result(R);
-	_ -> 
+	_ ->
 	    {error, not_found}
     end.
-	
+
 write_config(ConfigFile,all) ->
     write_config(ConfigFile,['_']);
 write_config(ConfigFile,Config) ->
     write_config(ConfigFile,Config,[]).
 write_config(ConfigFile,all,Opt) ->
     write_config(ConfigFile,['_'],Opt);
-write_config(ConfigFile,Nums,Opt) when is_list(Nums), is_integer(hd(Nums)); 
+write_config(ConfigFile,Nums,Opt) when is_list(Nums), is_integer(hd(Nums));
 				       Nums=:=['_'] ->
     F = fun(N) -> ets:select(?history_table,
 			     [{{N,'$1'},[],['$1']}])
@@ -263,7 +263,7 @@ list_config(ConfigFile) ->
 	{ok,B} -> read_config(B,[],1);
 	Error -> Error
     end.
-    
+
 read_config(<<>>,Acc,_N) ->
     lists:reverse(Acc);
 read_config(B,Acc,N) ->
@@ -276,7 +276,7 @@ run_config(ConfigFile) ->
 	Config when is_list(Config) ->
 	    lists:foreach(fun({_,{M,F,A}}) -> print_func(M,F,A),
 					      R = apply(M,F,A),
-					      print_result(R) 
+					      print_result(R)
 			  end,
 			  Config);
 	Error -> Error
@@ -286,16 +286,16 @@ run_config(ConfigFile,N) ->
     case list_config(ConfigFile) of
 	Config when is_list(Config) ->
 	    case lists:keysearch(N,1,Config) of
-		{value,{N,{M,F,A}}} -> 
+		{value,{N,{M,F,A}}} ->
 		    print_func(M,F,A),
 		    apply(M,F,A);
-		false -> 
+		false ->
 		    {error, not_found}
 	    end;
 	Error -> Error
     end.
-    
-    
+
+
 print_func(M,F,A) ->
     Args = arg_list(A,[]),
     io:format("~w:~w(~s) ->~n",[M,F,Args]).
@@ -317,14 +317,14 @@ p(Procs0,Flags0) ->
     no_store_p(Procs0,Flags0).
 no_store_p(Procs0,Flags0) ->
     case transform_flags(to_list(Flags0)) of
-	{error,Reason} -> 
+	{error,Reason} ->
 	    {error,Reason};
 	Flags ->
 	    Procs = procs(Procs0),
 	    case lists:foldl(fun(P,{PMatched,Ps}) -> case dbg:p(P,Flags) of
-					     {ok,Matched} -> 
+					     {ok,Matched} ->
 						 {[{P,Matched}|PMatched],[P|Ps]};
-					     {error,Reason} -> 
+					     {error,Reason} ->
 						 display_warning(P,Reason),
 						 {PMatched,Ps}
 					 end
@@ -459,23 +459,35 @@ stop() ->
     stop([]).
 stop(Opts) ->
     Fetch = stop_opts(Opts),
-    case whereis(?MODULE) of
-	undefined -> ok;
-	Pid when is_pid(Pid) -> 
-	    ?MODULE ! {stop,Fetch,self()},
-	    receive {?MODULE,stopped} -> ok end
-    end,
-    stopped.
+    Result =
+        case whereis(?MODULE) of
+            undefined -> ok;
+            Pid when is_pid(Pid) ->
+                ?MODULE ! {stop,Fetch,self()},
+                receive {?MODULE,R} -> R end
+        end,
+    stop_return(Result,Opts).
 
 stop_opts(Opts) ->
     case lists:member(format,Opts) of
-	true -> 
+	true ->
 	    format; % format implies fetch
-	false -> 
+	false ->
 	    case lists:member(fetch,Opts) of
 		true -> fetch;
 		false -> nofetch
 	    end
+    end.
+
+stop_return(R,Opts) ->
+    case {lists:member(return,Opts),R} of
+        {true,_} ->
+            R;
+        {false,{stopped,_}} ->
+            stopped;
+        {false,_} ->
+            %% Anything other than 'stopped' would not be bw compatible...
+            stopped
     end.
 
 
@@ -499,10 +511,10 @@ init(Parent) ->
     loop(dict:new()).
 
 loop(NodeInfo) ->
-    receive 
+    receive
 	{init_node,Node,MetaFile,PI,Traci} ->
 	    erlang:monitor_node(Node,true),
-	    MetaPid = 
+	    MetaPid =
 		case rpc:call(Node,
 			      observer_backend,
 			      ttb_init_node,
@@ -518,7 +530,7 @@ loop(NodeInfo) ->
 	    Sender ! {?MODULE,dict:fetch_keys(NodeInfo)},
 	    loop(NodeInfo);
 	{write_trace_info,Key,What} ->
-	    dict:fold(fun(Node,{_MetaFile,MetaPid},_) -> 
+	    dict:fold(fun(Node,{_MetaFile,MetaPid},_) ->
 			      rpc:call(Node,observer_backend,
 				       ttb_write_trace_info,[MetaPid,Key,What])
 		      end,
@@ -529,7 +541,7 @@ loop(NodeInfo) ->
 	    loop(dict:erase(Node,NodeInfo));
 	{stop,nofetch,Sender} ->
 	    dict:fold(
-	      fun(Node,{_,MetaPid},_) -> 
+	      fun(Node,{_,MetaPid},_) ->
 		      rpc:call(Node,observer_backend,ttb_stop,[MetaPid])
 	      end,
 	      ok,
@@ -540,22 +552,22 @@ loop(NodeInfo) ->
 	{stop,FetchOrFormat,Sender} ->
 	    Localhost = host(node()),
 	    Dir = ?upload_dir++ts(),
- 	    file:make_dir(Dir),
+	    file:make_dir(Dir),
 	    %% The nodes are traversed twice here because
 	    %% the meta tracing in observer_backend must be
 	    %% stopped before dbg is stopped, and dbg must
 	    %% be stopped before the trace logs are moved orelse
 	    %% windows complains.
-	    AllNodesAndMeta = 
+	    AllNodesAndMeta =
 		dict:fold(
-		  fun(Node,{MetaFile,MetaPid},Nodes) -> 
+		  fun(Node,{MetaFile,MetaPid},Nodes) ->
 			  rpc:call(Node,observer_backend,ttb_stop,[MetaPid]),
 			  [{Node,MetaFile}|Nodes]
 		  end,
 		  [],
 		  NodeInfo),
 	    dbg:stop_clear(),
-	    AllNodes = 
+	    AllNodes =
 		lists:map(
 		  fun({Node,MetaFile}) ->
 			  spawn(fun() -> fetch(Localhost,Dir,Node,MetaFile) end),
@@ -564,12 +576,13 @@ loop(NodeInfo) ->
 		  AllNodesAndMeta),
 	    ets:delete(?history_table),
 	    wait_for_fetch(AllNodes),
-	    io:format("Stored logs in ~s~n",[filename:absname(Dir)]),
+            Absname = filename:absname(Dir),
+	    io:format("Stored logs in ~s~n",[Absname]),
 	    case FetchOrFormat of
 		format -> format(Dir);
 		fetch -> ok
 	    end,
-	    Sender ! {?MODULE,stopped}
+	    Sender ! {?MODULE,{stopped,Absname}}
          ?get_status
     end.
 
@@ -583,18 +596,17 @@ ts() ->
 		  [Y,M,D,H,Min,S]).
 
 
-
 fetch(Localhost,Dir,Node,MetaFile) ->
-    case host(Node) of
-	Localhost -> % same host, just move the files
-	    Files = rpc:call(Node,observer_backend,ttb_get_filenames,[MetaFile]),
+    case (host(Node) == Localhost) orelse is_local(MetaFile) of
+        true -> % same host, just move the files
+	    Files = get_filenames(Node,MetaFile),
 	    lists:foreach(
 	      fun(File0) ->
 		      File = filename:join(Dir,filename:basename(File0)),
 		      file:rename(File0,File)
 	      end,
 	      Files);
-	_Otherhost ->
+	false ->
 	    {ok, LSock} = gen_tcp:listen(0, [binary,{packet,2},{active,false}]),
 	    {ok,Port} = inet:port(LSock),
 	    rpc:cast(Node,observer_backend,ttb_fetch,
@@ -605,6 +617,16 @@ fetch(Localhost,Dir,Node,MetaFile) ->
 	    ok = gen_tcp:close(Sock)
     end,
     ?MODULE ! {fetch_complete,Node}.
+
+is_local({local, _, _}) ->
+    true;
+is_local(_) ->
+    false.
+
+get_filenames(_N, {local,F,_}) ->
+    observer_backend:ttb_get_filenames(F);
+get_filenames(N, F) ->
+    rpc:call(N, observer_backend,ttb_get_filenames,[F]).
 
 receive_files(Dir,Sock,Fd) ->
     case gen_tcp:recv(Sock, 0) of
@@ -618,7 +640,7 @@ receive_files(Dir,Sock,Fd) ->
 	    receive_files(Dir,Sock,Fd1);
 	{error, closed} ->
 	    ok = file:close(Fd)
-    end.    
+    end.
 
 host(Node) ->
     [_name,Host] = string:tokens(atom_to_list(Node),"@"),
@@ -628,7 +650,7 @@ host(Node) ->
 wait_for_fetch([]) ->
     ok;
 wait_for_fetch(Nodes) ->
-    receive 
+    receive
 	{fetch_complete,Node} ->
 	    wait_for_fetch(lists:delete(Node,Nodes))
     end.
@@ -646,14 +668,14 @@ wait_for_fetch(Nodes) ->
 %%% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 write_info(Nodes,PI,Traci) ->
-    lists:foreach(fun({N,{local,C,_},F}) -> 
+    lists:foreach(fun({N,{local,C,_},F}) ->
 			  MetaFile = F ++ ".ti",
 			  file:delete(MetaFile),
 			  Traci1 = [{node,N},{file,C}|Traci],
 			  {ok,Port} = dbg:get_tracer(N),
-			  ?MODULE ! 
+			  ?MODULE !
 			      {init_node, N, {local,MetaFile,Port}, PI, Traci1};
-		     ({N,C,F}) -> 
+		     ({N,C,F}) ->
 			  MetaFile = F ++ ".ti",
 			  Traci1 = [{node,N},{file,C}|Traci],
 			  ?MODULE ! {init_node, N, MetaFile, PI, Traci1}
@@ -669,7 +691,7 @@ format(Files,Opt) ->
     ets:new(?MODULE,[named_table]),
     format(Files,Out,Handler).
 format(File,Out,Handler) when is_list(File), is_integer(hd(File)) ->
-    Files = 
+    Files =
 	case filelib:is_dir(File) of
 	    true ->  % will merge all files in the directory
 		MetaFiles = filelib:wildcard(filename:join(File,"*.ti")),
@@ -732,9 +754,9 @@ format_opt(Opt) ->
 read_traci(File) ->
     MetaFile = get_metafile(File),
     case file:read_file(MetaFile) of
-	{ok,B} -> 
+	{ok,B} ->
 	    interpret_binary(B,dict:new(),[]);
-	_ -> 
+	_ ->
 	    io:format("Warning: no meta data file: ~s~n",[MetaFile]),
 	    {dict:new(),[]}
     end.
@@ -750,7 +772,7 @@ interpret_binary(<<>>,Dict,P) ->
     {Dict,lists:reverse(P)};
 interpret_binary(B,Dict,P) ->
     {Term,Rest} = get_term(B),
-    {Dict1,P1} = 
+    {Dict1,P1} =
 	case Term of
 	    {pid,PI} ->
 		{Dict,[PI|P]};
@@ -790,24 +812,24 @@ check_client(Client,File) when is_list(Client) ->
 check_client(Client,File) when is_tuple(Client),element(2,Client)==wrap ->
     Root = filename:rootname(File,".wrp"),
     case filename:extension(Root) of
-	".*" -> 
+	".*" ->
 	    Part1 = filename:rootname(Root,"*"),
 	    setelement(1,Client,Part1);
-	_ -> 
+	_ ->
 	    check_exists(File)
     end.
 
 check_exists(File) ->
     case file:read_file_info(File) of
 	{ok,#file_info{type=regular}} -> File;
-	_ -> 
+	_ ->
 	    exit({error,no_file})
     end.
-	
+
 
 get_handler(Handler,Traci) ->
     case Handler of
-	undefined -> 
+	undefined ->
 	    case dict:find(handler,Traci) of
 		{ok,[H]} -> H;
 		error -> undefined
@@ -825,21 +847,21 @@ do_format(Fd,Details) ->
 
 
 start_client(FileOrWrap,Traci,et) ->
-    dbg:trace_client(file, FileOrWrap, 
-		     {fun handler/2, 
+    dbg:trace_client(file, FileOrWrap,
+		     {fun handler/2,
 		      {dict:to_list(Traci),{{ttb_et,handler},initial}}});
 start_client(FileOrWrap,Traci,undefined) ->
-    dbg:trace_client(file, FileOrWrap, 
-		     {fun handler/2, 
+    dbg:trace_client(file, FileOrWrap,
+		     {fun handler/2,
 		      {dict:to_list(Traci),{fun defaulthandler/4,initial}}});
 start_client(FileOrWrap,Traci,Handler) ->
-    dbg:trace_client(file, FileOrWrap, 
+    dbg:trace_client(file, FileOrWrap,
 		     {fun handler/2, {dict:to_list(Traci),Handler}}).
 
 handler(Trace,State) ->
     %% State here is only used for the initial state. The accumulated
     %% State is maintained by collector!!!
-    receive 
+    receive
 	{get,Collector} -> Collector ! {self(),{Trace,State}};
 	done -> ok
     end,
@@ -863,7 +885,7 @@ collector(Fd,[{_,{Client,{Trace,State}}}|Rest]) ->
     Trace1 = update_procinfo(Trace),
     State1 = handler1(Trace1,{Fd,State}),
     case get_next(Client,State1) of
-	end_of_trace -> 
+	end_of_trace ->
 	    handler1(end_of_trace,{Fd,State1}),
 	    collector(Fd,Rest);
 	Next -> collector(Fd,sort([Next|Rest]))
@@ -875,7 +897,7 @@ update_procinfo({drop,_N}=Trace) ->
     Trace;
 update_procinfo(Trace) when element(1,Trace)==seq_trace ->
     Info = element(3,Trace),
-    Info1 = 
+    Info1 =
 	case Info of
 	    {send, Serial, From, To, Msg} ->
 		{send, Serial, get_procinfo(From), get_procinfo(To), Msg};
@@ -909,24 +931,24 @@ get_procinfo({Name,Node}) when is_atom(Name) ->
     case ets:match_object(?MODULE,{'_',Name,Node}) of
 	[PI] -> PI;
 	[] -> {Name,Node}
-    end.	 
+    end.
 
 get_first([Client|Clients]) ->
     Client ! {get,self()},
-    receive 
-	{Client,{end_of_trace,_}} -> 
+    receive
+	{Client,{end_of_trace,_}} ->
 	    get_first(Clients);
-	{Client,{Trace,_State}}=Next -> 
+	{Client,{Trace,_State}}=Next ->
 	    [{timestamp(Trace),Next}|get_first(Clients)]
     end;
 get_first([]) -> [].
 
 get_next(Client,State) when is_pid(Client) ->
     Client ! {get,self()},
-    receive 
-	{Client,{end_of_trace,_}} -> 
+    receive
+	{Client,{end_of_trace,_}} ->
 	    end_of_trace;
-	{Client,{Trace,_OldState}} -> 
+	{Client,{Trace,_OldState}} ->
 	    {timestamp(Trace),{Client,{Trace,State}}} % inserting new state!!
     end.
 
@@ -946,7 +968,7 @@ to_list(Atom) when is_atom(Atom) -> [Atom];
 to_list(List) when is_list(List) -> List.
 
 write_binary(File,TermList) ->
-    {ok,Fd} = file:open(File,[raw,append]),    
+    {ok,Fd} = file:open(File,[raw,append]),
     %% Using the function implemented in observer_backend, only because
     %% is exists - so I don't have to write the same code twice.
     observer_backend:ttb_write_binary(Fd,TermList),
@@ -956,7 +978,7 @@ get_term(B) ->
     <<S:8, B2/binary>> = B,
     <<T:S/binary, Rest/binary>> = B2,
     case binary_to_term(T) of
-	{'$size',Sz} -> 
+	{'$size',Sz} ->
 	    %% size of the actual term was bigger than 8 bits
 	    <<T1:Sz/binary, Rest1/binary>> = Rest,
 	    {binary_to_term(T1),Rest1};
@@ -996,5 +1018,3 @@ dump_ti(<<>>,Acc) ->
 dump_ti(B,Acc) ->
     {Term,Rest} = get_term(B),
     dump_ti(Rest,[Term|Acc]).
-
-
